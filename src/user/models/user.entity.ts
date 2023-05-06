@@ -9,6 +9,12 @@ export class UserEntity {
   @Column()
   name: string;
 
+  @Column()
+  trelloId: string;
+
+  @Column()
+  username: string;
+
   @Column({ unique: true })
   email: string;
 

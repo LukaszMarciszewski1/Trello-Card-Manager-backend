@@ -3,7 +3,9 @@ import { Role } from './role.enum';
 
 export class User {
   id?: number;
-  name: string;
+  name?:string;
+  trelloId?: string;
+  username: string;
   @IsEmail()
   email: string;
   @IsString()

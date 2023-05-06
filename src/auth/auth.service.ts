@@ -5,18 +5,28 @@ import * as bcrypt from 'bcrypt';
 import { UserService } from './../user/user.service';
 import { User } from 'src/user/models/user.class';
 import { ExistingUserDTO } from 'src/user/models/existing-user.dto';
+import { TrelloService } from 'src/trello/trello.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly trelloService: TrelloService,
   ) {}
 
   async register(user: Readonly<User>): Promise<User> {
-    const { name, email, password } = user;
+    const { username, email, password } = user;
 
+    const existingTrelloMember = await this.trelloService.validateTrelloUser(username);
+    const trelloMember = await this.trelloService.findByUserName(username);
     const existingUser = await this.userService.findByEmail(email);
+
+    if (!existingTrelloMember)
+    throw new HttpException(
+      'Username does not exist in the Trello database',
+      HttpStatus.FORBIDDEN,
+    );
 
     if (existingUser)
       throw new HttpException(
@@ -26,7 +36,14 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const newUser = await this.userService.create(name, email, hashedPassword);
+    const newUser = await this.userService.create(
+      trelloMember.fullName,
+      trelloMember.id,
+      username,
+      email,
+      hashedPassword,
+    );
+
     return this.userService._getUserDetails(newUser);
   }
 
@@ -40,7 +57,7 @@ export class AuthService {
     if (!doesPasswordMatch) return null;
 
     const { password, ...result } = user;
-    return result
+    return result;
   }
 
   async login(

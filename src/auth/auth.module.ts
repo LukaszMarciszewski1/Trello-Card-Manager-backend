@@ -5,10 +5,12 @@ import { AuthController } from './auth.controller';
 import { JwtGuard } from './guards/jwt.guard';
 import { JwtStrategy } from './guards/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
+import { TrelloModule } from 'src/trello/trello.module';
 
 @Module({
   imports: [
     UserModule,
+    TrelloModule,
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: process.env.JWT_SECRET,
